@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "2766476845",
+    "project_id": "emergency-incident-responce",
+    "storage_bucket": "emergency-incident-responce.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:2766476845:android:170e37f7e87f2b4df00aa4",
+        "android_client_info": {
+          "package_name": "com.example.emegency_incident_responce_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDWzyylHQmsDPESDqrsMgSLh6-gxWbo148"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
