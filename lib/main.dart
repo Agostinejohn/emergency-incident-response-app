@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart'; // Import Firebase Core
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart'; // Import the generated Firebase configuration
 import 'screens/create_account_screen.dart'; // Import the Create Account screen
 import 'screens/report_emergency_screen.dart'; // Import your generated screens here
 import 'screens/emergency_reported_screen.dart'; // Import the Emergency Reported screen
@@ -8,7 +9,10 @@ import 'screens/sign_in_screen.dart'; // Import the Sign In screen
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized(); // Ensure widget binding
-  await Firebase.initializeApp(); // Initialize Firebase
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions
+        .currentPlatform, // Initialize Firebase with options
+  );
   runApp(const MyApp());
 }
 
@@ -25,9 +29,12 @@ class MyApp extends StatelessWidget {
       ),
       initialRoute: '/', // Set the initial route to the Create Account screen
       routes: {
-        '/': (context) => const CreateAccountScreen(), // Route to CreateAccountScreen
-        '/report': (context) => const ReportEmergencyScreen(), // Route to the ReportEmergencyScreen
-        '/emergencyReported': (context) => EmergencyReportedScreen(), // Route to Emergency Reported screen
+        '/': (context) =>
+            const CreateAccountScreen(), // Route to CreateAccountScreen
+        '/report': (context) =>
+            const ReportEmergencyScreen(), // Route to ReportEmergencyScreen
+        '/emergencyReported': (context) =>
+            const EmergencyReportedScreen(), // Route to Emergency Reported screen
         '/signIn': (context) => const SignInScreen(), // Route to Sign In screen
       },
       onGenerateRoute: (settings) {
@@ -43,10 +50,8 @@ class MyApp extends StatelessWidget {
             },
           );
         }
-        return null;
+        return null; // Return null if no route matched
       },
     );
   }
 }
-
-// The rest of your existing MyHomePage code can remain as is

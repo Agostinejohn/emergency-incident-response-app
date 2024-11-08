@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
-import 'emergency_reported_screen.dart'; // Import the Emergency Reported screen
+import 'package:cloud_firestore/cloud_firestore.dart'; // Import Firestore
+import 'package:firebase_storage/firebase_storage.dart'; // Import Firebase Storage
 import 'package:image_picker/image_picker.dart'; // For selecting an image
+import 'dart:io'; // For using File
+import 'emergency_reported_screen.dart'; // Import the Emergency Reported screen
 
 class ReportEmergencyScreen extends StatefulWidget {
   const ReportEmergencyScreen({super.key});
@@ -36,7 +39,25 @@ class _ReportEmergencyScreenState extends State<ReportEmergencyScreen> {
   ];
 
   // List for casualties count options
-  final List<String> casualtyCounts = ['1', '2', '3', '4', '5', '<10', '<15', 'Many'];
+  final List<String> casualtyCounts = [
+    '1',
+    '2',
+    '3',
+    '4',
+    '5',
+    '<10',
+    '<15',
+    'Many'
+  ];
+
+  // List of predefined locations
+  final List<String> predefinedLocations = [
+    'Kampi ya Moto, Kabarak',
+    'Nakuru',
+    'Naivasha, Mercy Njeri',
+    'Nairobi, CBD',
+    'Eldoret, Town Center',
+  ];
 
   // Image picker for uploading an image
   final ImagePicker _picker = ImagePicker();
@@ -52,7 +73,8 @@ class _ReportEmergencyScreenState extends State<ReportEmergencyScreen> {
         padding: const EdgeInsets.all(16.0),
         child: Form(
           key: _formKey,
-          child: SingleChildScrollView( // Allows for scrolling
+          child: SingleChildScrollView(
+            // Allows for scrolling
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -61,7 +83,7 @@ class _ReportEmergencyScreenState extends State<ReportEmergencyScreen> {
                   style: TextStyle(fontSize: 16, color: Colors.black54),
                 ),
                 const SizedBox(height: 16),
-                
+
                 // Incident Type Dropdown
                 const Text('Incident Type'),
                 const SizedBox(height: 8),
@@ -86,7 +108,8 @@ class _ReportEmergencyScreenState extends State<ReportEmergencyScreen> {
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  validator: (value) => value == null ? 'Please select an incident type' : null,
+                  validator: (value) =>
+                      value == null ? 'Please select an incident type' : null,
                 ),
                 const SizedBox(height: 16),
 
@@ -101,7 +124,8 @@ class _ReportEmergencyScreenState extends State<ReportEmergencyScreen> {
                       });
                     },
                     validator: (value) {
-                      if (selectedIncidentType == 'Other' && (value == null || value.isEmpty)) {
+                      if (selectedIncidentType == 'Other' &&
+                          (value == null || value.isEmpty)) {
                         return 'Please specify your type of emergency';
                       }
                       return null;
@@ -115,14 +139,15 @@ class _ReportEmergencyScreenState extends State<ReportEmergencyScreen> {
                   ),
                   const SizedBox(height: 16),
                 ],
-                
+
                 // Location Section
                 const Text('Location'),
                 const SizedBox(height: 8),
                 InkWell(
-                  onTap: _selectLocation,
+                  onTap: _selectLocation, // Call the method to select location
                   child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+                    padding:
+                        const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(color: Colors.grey),
@@ -134,7 +159,10 @@ class _ReportEmergencyScreenState extends State<ReportEmergencyScreen> {
                         Expanded(
                           child: Text(
                             incidentLocation ?? 'Select Incident Location',
-                            style: TextStyle(color: incidentLocation == null ? Colors.grey : Colors.black),
+                            style: TextStyle(
+                                color: incidentLocation == null
+                                    ? Colors.grey
+                                    : Colors.black),
                           ),
                         ),
                       ],
@@ -142,7 +170,7 @@ class _ReportEmergencyScreenState extends State<ReportEmergencyScreen> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                
+
                 // Description Section
                 const Text('Description'),
                 const SizedBox(height: 8),
@@ -167,7 +195,7 @@ class _ReportEmergencyScreenState extends State<ReportEmergencyScreen> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                
+
                 // Casualties Checkbox and Dropdown
                 Row(
                   children: [
@@ -186,7 +214,7 @@ class _ReportEmergencyScreenState extends State<ReportEmergencyScreen> {
                   ],
                 ),
                 const SizedBox(height: 8),
-                
+
                 // Casualty Count Dropdown
                 if (hasCasualties) ...[
                   const Text('Number of Casualties'),
@@ -209,18 +237,21 @@ class _ReportEmergencyScreenState extends State<ReportEmergencyScreen> {
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),
-                    validator: (value) => hasCasualties && value == null ? 'Please select the number of casualties' : null,
+                    validator: (value) => hasCasualties && value == null
+                        ? 'Please select the number of casualties'
+                        : null,
                   ),
                   const SizedBox(height: 16),
                 ],
-                
+
                 // Image Upload Section
                 const Text('Add Photo (Optional)'),
                 const SizedBox(height: 8),
                 InkWell(
                   onTap: _selectImage,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+                    padding:
+                        const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(color: Colors.grey),
@@ -231,8 +262,13 @@ class _ReportEmergencyScreenState extends State<ReportEmergencyScreen> {
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            incidentImage == null ? 'Upload Incident Photo' : 'Photo Added',
-                            style: TextStyle(color: incidentImage == null ? Colors.grey : Colors.black),
+                            incidentImage == null
+                                ? 'Upload Incident Photo'
+                                : 'Photo Added',
+                            style: TextStyle(
+                                color: incidentImage == null
+                                    ? Colors.grey
+                                    : Colors.black),
                           ),
                         ),
                       ],
@@ -240,7 +276,7 @@ class _ReportEmergencyScreenState extends State<ReportEmergencyScreen> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                
+
                 // Buttons for submission and back navigation
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -249,7 +285,8 @@ class _ReportEmergencyScreenState extends State<ReportEmergencyScreen> {
                       onPressed: () => Navigator.pop(context),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.green,
-                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 24, vertical: 12),
                       ),
                       child: const Text('Back'),
                     ),
@@ -257,7 +294,8 @@ class _ReportEmergencyScreenState extends State<ReportEmergencyScreen> {
                       onPressed: _submitReport,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.purple,
-                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 24, vertical: 12),
                       ),
                       child: const Text('Submit'),
                     ),
@@ -273,9 +311,29 @@ class _ReportEmergencyScreenState extends State<ReportEmergencyScreen> {
 
   // Function to select location
   void _selectLocation() {
-    setState(() {
-      incidentLocation = "Selected Location"; // Mock location for now
-    });
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Select a Location'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: predefinedLocations.map((location) {
+                return ListTile(
+                  title: Text(location),
+                  onTap: () {
+                    setState(() {
+                      incidentLocation = location; // Set selected location
+                    });
+                    Navigator.of(context).pop(); // Close the dialog
+                  },
+                );
+              }).toList(),
+            ),
+          ),
+        );
+      },
+    );
   }
 
   // Function to pick an image using ImagePicker
@@ -286,8 +344,8 @@ class _ReportEmergencyScreenState extends State<ReportEmergencyScreen> {
     });
   }
 
-  // Function to submit the report with validation and navigation to Emergency Reported Screen
-  void _submitReport() {
+  // Function to submit the report with validation and Firestore integration
+  Future<void> _submitReport() async {
     if (selectedIncidentType == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please select an incident type')),
@@ -295,7 +353,9 @@ class _ReportEmergencyScreenState extends State<ReportEmergencyScreen> {
       return;
     }
 
-    if (selectedIncidentType == 'Other' && (otherIncidentDescription == null || otherIncidentDescription!.isEmpty)) {
+    if (selectedIncidentType == 'Other' &&
+        (otherIncidentDescription == null ||
+            otherIncidentDescription!.isEmpty)) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please specify your type of emergency')),
       );
@@ -303,10 +363,55 @@ class _ReportEmergencyScreenState extends State<ReportEmergencyScreen> {
     }
 
     if (_formKey.currentState!.validate()) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const EmergencyReportedScreen()),
-      );
+      String? imageUrl;
+
+      // Upload image to Firebase Storage if an image is selected
+      if (incidentImage != null) {
+        try {
+          final storageRef = FirebaseStorage.instance
+              .ref()
+              .child('emergency_images/${incidentImage!.name}');
+          await storageRef.putFile(File(
+              incidentImage!.path)); // Ensure you import 'dart:io' to use File
+          imageUrl = await storageRef.getDownloadURL(); // Get the download URL
+        } catch (e) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error uploading image: $e')),
+          );
+        }
+      }
+
+      // Create a report data object
+      final reportData = {
+        'incidentType': selectedIncidentType == 'Other'
+            ? otherIncidentDescription
+            : selectedIncidentType,
+        'description': incidentDescription,
+        'location': incidentLocation,
+        'hasCasualties': hasCasualties,
+        'casualtyCount': selectedCasualtyCount,
+        'imageUrl': imageUrl, // Store the image URL
+        'timestamp': FieldValue.serverTimestamp(), // Add a timestamp
+      };
+
+      try {
+        // Submit the report to Firestore
+        await FirebaseFirestore.instance
+            .collection('emergency_reports')
+            .add(reportData);
+
+        // Navigate to Emergency Reported Screen upon successful submission
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => const EmergencyReportedScreen()),
+        );
+      } catch (e) {
+        // Handle any errors that occur during submission
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error submitting report: $e')),
+        );
+      }
     }
   }
 }
