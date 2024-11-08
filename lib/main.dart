@@ -6,6 +6,8 @@ import 'screens/report_emergency_screen.dart'; // Import your generated screens 
 import 'screens/emergency_reported_screen.dart'; // Import the Emergency Reported screen
 import 'screens/emergency_status_screen.dart'; // Import the Emergency Status screen
 import 'screens/sign_in_screen.dart'; // Import the Sign In screen
+import 'screens/resource_allocation_screen.dart'; // Import the Resource Allocation screen
+import 'screens/emergency_confirmation_screen.dart'; // Import the Emergency Confirmation screen
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized(); // Ensure widget binding
@@ -36,6 +38,10 @@ class MyApp extends StatelessWidget {
         '/emergencyReported': (context) =>
             const EmergencyReportedScreen(), // Route to Emergency Reported screen
         '/signIn': (context) => const SignInScreen(), // Route to Sign In screen
+        '/resourceAllocation': (context) =>
+            ResourceAllocationScreen(), // Route to Resource Allocation screen
+        '/emergencyConfirmation': (context) =>
+            const EmergencyConfirmationScreen(), // Route to Emergency Confirmation screen
       },
       onGenerateRoute: (settings) {
         // Handle dynamic route for emergency status screen

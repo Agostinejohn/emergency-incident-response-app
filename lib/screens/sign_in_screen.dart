@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart'; // Import Firestore
 
 class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});
@@ -35,13 +36,39 @@ class _SignInScreenState extends State<SignInScreen> {
         return;
       }
 
-      await _auth.signInWithEmailAndPassword(
+      // Sign in the user
+      UserCredential userCredential = await _auth.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
 
-      // Navigate to the ReportEmergencyScreen upon successful sign-in
-      Navigator.pushNamed(context, '/report');
+      // Get the user ID
+      final userId = userCredential.user?.uid;
+
+      // Fetch user role from Firestore
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .get();
+
+      // Check if the user exists and get their role
+      if (userDoc.exists) {
+        final userRole =
+            userDoc['role']; // Assuming you have a field called 'role'
+
+        // Navigate to different screens based on user role
+        if (userRole == 'admin') {
+          Navigator.pushNamed(context,
+              '/emergencyConfirmation'); // Navigate to Emergency Confirmation screen for admins
+        } else {
+          Navigator.pushNamed(context,
+              '/report'); // Navigate to report screen for regular users
+        }
+      } else {
+        setState(() {
+          _errorMessage = 'User role not found.';
+        });
+      }
     } on FirebaseAuthException catch (e) {
       setState(() {
         _errorMessage = e.message ?? "An error occurred.";

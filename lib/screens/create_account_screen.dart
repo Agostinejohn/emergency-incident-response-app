@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart'; // Import Firestore
 
 class CreateAccountScreen extends StatefulWidget {
   const CreateAccountScreen({super.key});
@@ -15,10 +16,15 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
   final TextEditingController _fullNameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
 
   String _errorMessage = '';
   bool _isLoading = false;
+
+  // Role selection
+  String? _selectedRole; // Variable to hold the selected role
+  final List<String> _roles = ['user', 'admin']; // Available roles
 
   // Sign Up function
   Future<void> _signUp() async {
@@ -29,10 +35,21 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
 
     try {
       if (_passwordController.text == _confirmPasswordController.text) {
-        await _auth.createUserWithEmailAndPassword(
+        UserCredential userCredential =
+            await _auth.createUserWithEmailAndPassword(
           email: _emailController.text,
           password: _passwordController.text,
         );
+
+        // Store user role in Firestore
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(userCredential.user?.uid)
+            .set({
+          'fullName': _fullNameController.text,
+          'email': _emailController.text,
+          'role': _selectedRole ?? 'user', // Default to 'user' if not selected
+        });
 
         // Navigate to the ReportEmergencyScreen upon successful sign-up
         Navigator.pushNamed(context, '/reportEmergency');
@@ -109,6 +126,29 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                 decoration: const InputDecoration(
                   labelText: 'Confirm Password',
                 ),
+              ),
+              const SizedBox(height: 20),
+
+              // Role selection dropdown
+              const Text('Select Role:'),
+              DropdownButtonFormField<String>(
+                value: _selectedRole,
+                items: _roles.map((String role) {
+                  return DropdownMenuItem<String>(
+                    value: role,
+                    child: Text(role),
+                  );
+                }).toList(),
+                onChanged: (newValue) {
+                  setState(() {
+                    _selectedRole = newValue;
+                  });
+                },
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                ),
+                validator: (value) =>
+                    value == null ? 'Please select a role' : null,
               ),
               const SizedBox(height: 20),
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ResourceAllocationScreen extends StatefulWidget {
   @override
@@ -13,6 +14,19 @@ class _ResourceAllocationScreenState extends State<ResourceAllocationScreen> {
   bool policeUnits = true;
   bool hazmatTeam = true;
   bool searchAndRescue = true;
+
+  String incidentType = '';
+  String location = '';
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final args =
+        ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+    incidentType =
+        args['incidentType'] ?? 'Unknown'; // Provide a default value if null
+    location = args['location'] ?? 'Unknown'; // Provide a default value if null
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,25 +51,11 @@ class _ResourceAllocationScreenState extends State<ResourceAllocationScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Incident Type:',
+                      'Incident Type: $incidentType',
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                     SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Text(
-                          'Fire', // Replace with dynamic value
-                          style: TextStyle(
-                            color: Colors.green,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Spacer(),
-                        Text('Location: 123 Main St, Cityville'),
-                      ],
-                    ),
-                    SizedBox(height: 8),
-                    Text('Reported at: June 20, 2023 15:45'), // Replace with dynamic value
+                    Text('Location: $location'),
                   ],
                 ),
               ),
@@ -63,10 +63,7 @@ class _ResourceAllocationScreenState extends State<ResourceAllocationScreen> {
             SizedBox(height: 20),
             Text(
               'Resource Allocation',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
             ),
             SizedBox(height: 10),
             _resourceRow(
@@ -103,55 +100,11 @@ class _ResourceAllocationScreenState extends State<ResourceAllocationScreen> {
               }),
             ),
             SizedBox(height: 20),
-            Text(
-              'Additional Resources',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
-            ),
-            SizedBox(height: 10),
-            _switchTile(
-              'Police Units',
-              policeUnits,
-              onChanged: (value) => setState(() {
-                policeUnits = value;
-              }),
-            ),
-            _switchTile(
-              'Hazmat Team',
-              hazmatTeam,
-              onChanged: (value) => setState(() {
-                hazmatTeam = value;
-              }),
-            ),
-            _switchTile(
-              'Search and Rescue',
-              searchAndRescue,
-              onChanged: (value) => setState(() {
-                searchAndRescue = value;
-              }),
-            ),
-            SizedBox(height: 20),
-            Text(
-              'Special Instructions',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
-            ),
-            SizedBox(height: 10),
-            TextField(
-              decoration: InputDecoration(
-                border: OutlineInputBorder(),
-                hintText: 'Enter any special instructions for the rescue team',
-              ),
-            ),
-            SizedBox(height: 20),
             Center(
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15), backgroundColor: Colors.green,
+                  padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                  backgroundColor: Colors.green,
                   textStyle: TextStyle(fontSize: 18),
                 ),
                 onPressed: _dispatchResources,
@@ -164,8 +117,8 @@ class _ResourceAllocationScreenState extends State<ResourceAllocationScreen> {
     );
   }
 
-  Widget _resourceRow(
-      String resourceName, int currentValue, int maxValue, {required VoidCallback onDecrease, required VoidCallback onIncrease}) {
+  Widget _resourceRow(String resourceName, int currentValue, int maxValue,
+      {required VoidCallback onDecrease, required VoidCallback onIncrease}) {
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
       elevation: 3,
@@ -191,20 +144,32 @@ class _ResourceAllocationScreenState extends State<ResourceAllocationScreen> {
     );
   }
 
-  Widget _switchTile(String title, bool value, {required ValueChanged<bool> onChanged}) {
-    return SwitchListTile(
-      title: Text(title),
-      value: value,
-      onChanged: onChanged,
-    );
-  }
+  void _dispatchResources() async {
+    // Save resource allocations to Firestore
+    final resourcesData = {
+      'incidentType': incidentType,
+      'location': location,
+      'fireTrucks': fireTrucks,
+      'firefighters': firefighters,
+      'ambulances': ambulances,
+      'policeUnits': policeUnits,
+      'hazmatTeam': hazmatTeam,
+      'searchAndRescue': searchAndRescue,
+      'timestamp':
+          FieldValue.serverTimestamp(), // Optional: timestamp of allocation
+    };
 
-  void _dispatchResources() {
+    // Save resource allocation to Firestore
+    await FirebaseFirestore.instance
+        .collection('resource_allocations')
+        .add(resourcesData);
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: Text('Resources Dispatched'),
-        content: Text('The team has received the resources and is now on action.'),
+        content:
+            Text('The team has received the resources and is now in action.'),
         actions: [
           TextButton(
             child: Text('OK'),
